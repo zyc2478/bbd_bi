@@ -58,18 +58,21 @@
 
 <script>
     import VueHighcharts from 'vue2-highcharts'
-    const asyncData = {
+/*    const asyncData = {
         name: 'Tokyo',
-        marker: {
-            symbol: 'square'
-        },
-        data: [7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, {
-            y: 26.5,
-            marker: {
-                symbol: 'url(http://www.highcharts.com/demo/gfx/sun.png)'
-            }
-        }, 23.3, 18.3, 13.9, 9.6]
-    }
+        data: [7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6]
+    }*/
+
+    const asyncData = [{"bid_date":"2018-07-01","bid_count":19,"bid_total_amount":3249},
+        {"bid_date":"2018-07-05","bid_count":25,"bid_total_amount":3875},
+        {"bid_date":"2018-07-10","bid_count":38,"bid_total_amount":3205},]
+
+/*    const asyncData = {
+        name: 'bid_list_summary',
+        bid_date: ["2018-7-1","2018-7-5","2018-7-10"],
+        bid_total_amount: [19,23,25]
+    }*/
+
     export default{
         components: {
             VueHighcharts
@@ -87,9 +90,11 @@
                         text: 'Source: WorldClimate.com'
                     },
                     xAxis: {
-                        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+                        categories: ['Jan', 'Feb', 'Mar']
                     },
+
+/*                    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'*/
                     yAxis: {
                         title: {
                             text: 'Temperature'
@@ -107,15 +112,6 @@
                     credits: {
                         enabled: false
                     },
-                    plotOptions: {
-                        spline: {
-                            marker: {
-                                radius: 4,
-                                lineColor: '#666666',
-                                lineWidth: 1
-                            }
-                        }
-                    },
                     series: []
                 }
             }
@@ -125,9 +121,22 @@
                 let lineCharts = this.$refs.lineCharts;
                 lineCharts.delegateMethod('showLoading', 'Loading...');
                 setTimeout(() => {
-                    lineCharts.addSeries(asyncData);
+                    let bidListData = asyncData;
+                    let length = bidListData.length;
+
+                    let blcategories = [];
+                    let blseries = [];
+                    for(let i=0;i<length;i++){
+
+                        blcategories.push(bidListData[i]['key']);
+                        blseries.push({'y':bidListData[i]['value'],'name':bidListData[i]['key']+'%'});
+                    }
+                    lineCharts.addSeries(blseries);
                     lineCharts.hideLoading();
+
                 }, 2000)
+
+
             }
         }
     }
