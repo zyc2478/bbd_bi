@@ -58,21 +58,10 @@
 
 <script>
     import VueHighcharts from 'vue2-highcharts'
-/*    const asyncData = {
-        name: 'Tokyo',
-        data: [7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6]
-    }*/
-
     const asyncData = [{"bid_date":"2018-07-01","bid_count":19,"bid_total_amount":3249},
         {"bid_date":"2018-07-05","bid_count":25,"bid_total_amount":3875},
-        {"bid_date":"2018-07-10","bid_count":38,"bid_total_amount":3205},]
-
-/*    const asyncData = {
-        name: 'bid_list_summary',
-        bid_date: ["2018-7-1","2018-7-5","2018-7-10"],
-        bid_total_amount: [19,23,25]
-    }*/
-
+        {"bid_date":"2018-07-10","bid_count":38,"bid_total_amount":3205},
+        {"bid_date":"2018-07-30","bid_count":180,"bid_total_amount":4280}]
     export default{
         components: {
             VueHighcharts
@@ -84,27 +73,44 @@
                         type: 'spline'
                     },
                     title: {
-                        text: 'Monthly Average Temperature'
+                        text: '30天投标数分析'
                     },
                     subtitle: {
-                        text: 'Source: WorldClimate.com'
+                        text: 'Source: BidByDebt'
                     },
-                    xAxis: {
-                        categories: ['Jan', 'Feb', 'Mar']
-                    },
-
-/*                    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'*/
-                    yAxis: {
+                    xAxis: {},
+                    yAxis: [{
                         title: {
-                            text: 'Temperature'
+                            text: '投标数'
                         },
+                        plotLines: [{
+                            value: 0,
+                            width: 1,
+                            color: '#808080'
+                        }],
                         labels: {
                             formatter: function () {
-                                return this.value + '°';
+                                return this.value;
                             }
                         }
                     },
+                    {
+                        title: {
+                            text: '投标金额'
+                        },
+                        opposite: true,
+                        plotLines: [{
+                            value: 0,
+                            width: 1,
+                            color: '#FFF080',
+                            id: 'amount_plot_line'
+                        }],
+                        labels: {
+                            formatter: function () {
+                                return this.value;
+                            }
+                        }
+                    }],
                     tooltip: {
                         crosshairs: true,
                         shared: true
@@ -120,23 +126,36 @@
             load(){
                 let lineCharts = this.$refs.lineCharts;
                 lineCharts.delegateMethod('showLoading', 'Loading...');
+                var seriesCountData = [];
+                var seriesAmountData = [];
+                var categoriesData = [];
+                var amount_max = 0;
+                var count_max = 0;
+
                 setTimeout(() => {
-                    let bidListData = asyncData;
-                    let length = bidListData.length;
 
-                    let blcategories = [];
-                    let blseries = [];
-                    for(let i=0;i<length;i++){
-
-                        blcategories.push(bidListData[i]['key']);
-                        blseries.push({'y':bidListData[i]['value'],'name':bidListData[i]['key']+'%'});
+                    console.log("asyncData.length = " + asyncData.length);
+                    for(var i = 0;i < asyncData.length; i++) {
+                        console.log("asyncData[i]['bid_count']:" + asyncData[i]['bid_count']);
+                        console.log("asyncData[i]['bid_total_amount']:" + asyncData[i]['bid_total_amount']);
+                        seriesCountData.push(asyncData[i]['bid_count']);
+                        seriesAmountData.push(asyncData[i]['bid_total_amount']);
+                        categoriesData.push(asyncData[i]['bid_date']);
+                        if(asyncData[i]['bid_count'] > count_max){
+                            count_max = asyncData[i]['bid_count'];
+                        }
+                        if(asyncData[i]['bid_total_amount'] > amount_max){
+                            amount_max = asyncData[i]['bid_total_amount'];
+                        }
                     }
-                    lineCharts.addSeries(blseries);
+                    console.log("seriesCountData:" + seriesCountData);
+                    console.log("seriesAmountDate:" + seriesAmountData);
+                    lineCharts.addSeries({name:'投标数',data:seriesCountData});
+                    lineCharts.addSeries({name:'投标金额',data:seriesAmountData,yAxis:1});
+                    lineCharts.getChart().xAxis[0].setCategories(categoriesData);
+
                     lineCharts.hideLoading();
-
                 }, 2000)
-
-
             }
         }
     }
