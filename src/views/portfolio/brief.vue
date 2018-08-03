@@ -126,6 +126,7 @@
             load(){
                 let lineCharts = this.$refs.lineCharts;
                 lineCharts.delegateMethod('showLoading', 'Loading...');
+                var serverData;
                 var seriesCountData = [];
                 var seriesAmountData = [];
                 var categoriesData = [];
@@ -134,7 +135,38 @@
 
                 setTimeout(() => {
 
-                    console.log("asyncData.length = " + asyncData.length);
+                    this.$http.get('http://192.168.15.32:8089/bbd_ds/vwBidList/getVwBidList/30')
+                        .then((response) => {
+                            if (response.body.code === '200') {
+                                let serverData = response.body.data;
+                                console.log("asyncData.length = " + serverData.length);
+                                for(var i = 0;i < serverData.length; i++) {
+                                    console.log("asyncData[i]['bid_count']:" + serverData[i]['bid_count']);
+                                    console.log("asyncData[i]['bid_total_amount']:" + serverData[i]['bid_total_amount']);
+                                    seriesCountData.push(serverData[i]['bid_count']);
+                                    seriesAmountData.push(serverData[i]['bid_total_amount']);
+                                    categoriesData.push(serverData[i]['bid_date']);
+                                    if(serverData[i]['bid_count'] > count_max){
+                                        count_max = serverData[i]['bid_count'];
+                                    }
+                                    if(serverData[i]['bid_total_amount'] > amount_max){
+                                        amount_max = serverData[i]['bid_total_amount'];
+                                    }
+                                }
+                                console.log("seriesCountData:" + seriesCountData);
+                                console.log("seriesAmountDate:" + seriesAmountData);
+                                lineCharts.addSeries({name:'投标数',data:seriesCountData});
+                                lineCharts.addSeries({name:'投标金额',data:seriesAmountData,yAxis:1});
+                                lineCharts.getChart().xAxis[0].setCategories(categoriesData);
+
+                                lineCharts.hideLoading();
+                            }
+                        })
+                        .catch(function(response) {
+                            console.log(response)
+                        })
+
+                    /*console.log("asyncData.length = " + asyncData.length);
                     for(var i = 0;i < asyncData.length; i++) {
                         console.log("asyncData[i]['bid_count']:" + asyncData[i]['bid_count']);
                         console.log("asyncData[i]['bid_total_amount']:" + asyncData[i]['bid_total_amount']);
@@ -154,7 +186,7 @@
                     lineCharts.addSeries({name:'投标金额',data:seriesAmountData,yAxis:1});
                     lineCharts.getChart().xAxis[0].setCategories(categoriesData);
 
-                    lineCharts.hideLoading();
+                    lineCharts.hideLoading();*/
                 }, 2000)
             }
         }
