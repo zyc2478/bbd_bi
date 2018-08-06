@@ -58,10 +58,6 @@
 
 <script>
     import VueHighcharts from 'vue2-highcharts';
-    import VueResource from 'vue-resource';
-    import Vue from 'vue';
-/*    this.use(VueResource);*/
-
 
     const asyncData = [{"bid_date":"2018-07-01","bid_count":19,"bid_total_amount":3249},
         {"bid_date":"2018-07-05","bid_count":25,"bid_total_amount":3875},
@@ -137,24 +133,50 @@
                 var categoriesData = [];
                 var amount_max = 0;
                 var count_max = 0;
-                var base_url = "http://localhost:8089/bbd_ds/vwBidList/getVwBidList/30";
+                var base_url = "http://192.168.15.32:8089/bbd_ds/vwBidList/getVwBidList/30";
 
                 setTimeout(() => {
 
                     this.axios({
                         method: 'get',
-                        url: '/roles',
+                        url: '/selectVwBidList',
                         params: {
-                            'page':0,
-                            'pageSize':5
+                            'bidDate': '2018-6-19'
                         }
+/*                        url: '/roles',
+                        params: {x`
+                            'page': 0,
+                            'pageSize': 5
+                        }*/
                     }).then(function (response) {
-                        serverData=response.data.data;
-                        console.log(serverData);
+                        serverData = response.data.data;
+                        console.log("serverData:" + serverData);
+
+                        for (var i = 0; i < serverData.length; i++) {
+                            console.log("asyncData[i]['bid_count']:" + serverData[i]['bid_count']);
+                            console.log("asyncData[i]['bid_total_amount']:" + serverData[i]['bid_total_amount']);
+                            seriesCountData.push(serverData[i]['bid_count']);
+                            seriesAmountData.push(serverData[i]['bid_total_amount']);
+                            categoriesData.push(serverData[i]['bid_date']);
+                            if (serverData[i]['bid_count'] > count_max) {
+                                count_max = serverData[i]['bid_count'];
+                            }
+                            if (serverData[i]['bid_total_amount'] > amount_max) {
+                                amount_max = serverData[i]['bid_total_amount'];
+                            }
+                        }
+                        console.log("seriesCountData:" + seriesCountData);
+                        console.log("seriesAmountDate:" + seriesAmountData);
+                        lineCharts.addSeries({name: '投标数', data: seriesCountData});
+                        lineCharts.addSeries({name: '投标金额', data: seriesAmountData, yAxis: 1});
+                        lineCharts.getChart().xAxis[0].setCategories(categoriesData);
+
+                        lineCharts.hideLoading();
                         // this.total=response.data.totalCount;
                     }.bind(this)).catch(function (error) {
                         alert(error);
                     });
+                },2000)
 
 
                     /*this.$http.get('http://localhost:8089/bbd_ds/vwBidList/getVwBidList/30')
@@ -190,8 +212,8 @@
                         })
                         .catch(error=> {
                             console.log(error);
-                        });*/
-                }, 2000)
+                        });
+                }, 2000)*/
                     /*this.$http.get('http://localhost:8089/bbd_ds/vwBidList/getVwBidList/30')
                         .then(function(res) {
                             if (res.body.code === '200') {
